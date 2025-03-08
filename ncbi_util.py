@@ -88,4 +88,55 @@ def fetch_paper_details(pmid_list: List[str]) -> List[Dict[str, Any]]:
             paper = {
                 "pmid": pmid,
                 "title": paper_info.get("Title", ""),
+                "author": ", ".join(paper_info.get("AuthorList", [])),
+                "journal": paper_info.get("FullJournalName", ""),
+                "publication_date": paper_info.get("PubDate", ""),
+                "abstract": "",
+                "doi": "",
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
             }
+            papers.append(paper)
+        
+        for paper in papers:
+            fetch_abstract(paper)
+            time.sleep(0.5)
+        return papers
+    
+    except Exception as e:
+        print(f"Error fetching paper details: {e}")
+        return papers
+    
+def fetch_abstract(paper: Dict[str, Any]) -> None:
+    try:
+        handle = Entrez.efetch(
+            db="pubmed",
+            id=paper["pmid"],
+            retmode="xml"
+        )
+        record = Entrez.read(handle)
+        handle.close()
+
+        article = record["PubmedArticle"][0]["MedlineCitation"]["Article"]
+
+        if "Abstract" in article:
+            abstract_parts = article["Abstract"]["AbstractText"]
+
+            if isinstance(abstract_parts, list):
+                full_abstract = ""
+                for part in abstract_parts:
+                    if hasattr(part, "attributes") and "Label" in part.attributes:
+                        full_abstract += f"{part.attributes['Label']}: {part}\n"
+                    else:
+                        full_abstract += f"{part}\n"
+                paper["abstract"] = full_abstract.strip()
+            else:
+                paper["abstract"] = abstract_parts
+
+        article_id = record["PubmedArticle"][0]["PubmedData"]["ArticleIdList"]
+        for id_item in article_id:
+            if id_item.attributes.get("IdType") == "doi":
+                paper["doi"] = str(id_item)
+                break
+    except Exception as e:
+        print(f"Error fetching abstract for {paper['pmid']}: {e}")
+
