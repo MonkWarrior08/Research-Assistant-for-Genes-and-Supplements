@@ -140,3 +140,122 @@ def fetch_abstract(paper: Dict[str, Any]) -> None:
     except Exception as e:
         print(f"Error fetching abstract for {paper['pmid']}: {e}")
 
+def get_gene_info(gene_name: str) -> Dict[str, Any]:
+    gene_data = parse_gene_input(gene_name)
+    gene_symbol = gene_data["gene"]
+    rs_id = gene_data["rs_id"]
+
+    results = {
+        "gene_info": {},
+        "snp_info": {},
+        "original_query": gene_name
+    }
+    
+    try:
+        if gene_symbol:
+            search_handle = Entrez.esearch(db="gene", term=f"{gene_symbol}[Gene Name] OR {gene_symbol}[Gene Symbol]")
+            search_result = Entrez.read(search_handle)
+            search_handle.close()
+
+            if search_result["IdList"]:
+                gene_id = search_result["IdList"][0]
+                fetch_handle = Entrez.efetch(db="gene", id=gene_id, retmode="xml")
+                gene_record = Entrez.read(fetch_handle)
+                fetch_handle.close()
+
+                if gene_record:
+                    gene_data = gene_record[0]
+
+                    results["gene_info"]= {
+                        "gene_id": gene_id,
+                        "name": gene_data.get("Entrezgene_gene", {}).get("Gene-ref", {}).get("Gene-ref_locus", ""),
+                        "symbol": gene_data.get("Entrezgene_gene", {}).get("Gene-ref", {}).get("Gene-ref_locus-tag", ""),
+                        "description": gene_data.get("Entrezgene_gene", {}).get("Gene-ref", {}).get("Gene-ref_desc", ""),
+                        "organism": gene_data.get("Entrezgene_source", {}).get("BioSource", {}).get("BioSource_org", {}).get("Org-ref", {}).get("Org-ref_taxname", ""),
+                        "aliases": gene_data.get("Entrezgene_gene", {}).get("Gene-ref", {}).get("Gene-ref_syn", []),
+                    }
+            else:
+                results["gene_info"] = {"error": f"Gene {gene_symbol} not foud"}
+
+    except Exception as e:
+        results["gene_info"] = {"error": f"Error retreiving gene info: {str(e)}"}
+    
+    if rs_id:
+        results["snp_info"] = get_snp_info_direct(rs_id)
+        genotype = gene_data.get("genotype", "")
+        if genotype:
+            results["snp_info"]["genotype"] = genotype
+    return results
+
+def get_snp_info_direct(rs_id: str) -> Dict[str, Any]:
+    if not rs_id:
+        return {"error": "No SNP Id provided"}
+    
+    rs_number = rs_id.lower().replace("rs", "")
+
+    try:
+        url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=snp&id={rs_number}"
+        if ncbi_api_key:
+            url += f"&api_key={NCBI_API_KEY}"
+        
+        response = requests.get(url)
+        response.raise_for_status()
+
+        root = ElementTree.fromstring(response.content)
+
+        snp_info = {
+            "rs_id": rs_id,
+            "variant_type": "",
+            "gene_names": [],
+            "clinical_significance": "",
+            "chromosome": "",
+            "position": "",
+            "minor_allele": "",
+            "minor_allele_freq": "",
+            "assembly": "",
+            "alleles": []
+        }
+
+        for item in root.findall(".//Item"):
+            name = item.get("Name")
+            if name == "CHRPOS" and item.text:
+                chrpos = item.text.split(":")
+                if len(chrpos) >= 2:
+                    snp_info["chromosome"] = chrpos[0]
+                    snp_info["position"] = chrpos[1]
+            elif name == "GENES" and len(item) > 0:
+                for gene in item.findall(".//Item[@Name='NAME']"):
+                    if gene.text:
+                        snp_info["gene_names"].append(gene.text)
+            elif name == "SNP_CLASS" and item.text:
+                snp_info["variant_type"] = item.text
+            elif name == "CLINICAL_SIGNIFICANCE" and item.text:
+                snp_info["clinical_significance"] = item.text
+            elif name == "GLOBAL_MAFS" and len(item) > 0:
+                for maf_item in item.findall(".//Item[@Name='STUDY']"):
+                    study_name = maf_item.text
+                    if study_name and "1000Genomes" in study_name:
+                        for sibling in maf_item.getparent():
+                            if sibling.get("Name") == "FREQ":
+                                freqs = sibling.text.split("/") if sibling.text else []
+                                if len(freqs) >= 2:
+                                    snp_info["minor_allele"] = freqs[0]
+                                    snp_info["minor_allele_freq"] = freqs[1]
+                                break
+        if not snp_info["gene_names"]:
+            snp_info["gene_names"] = ["Not specified"]
+        if not snp_info["variant_type"]:
+            snp_info["variant_type"] = "unknown"
+        
+        return snp_info
+    
+    except requests.exceptions.RequestException as e:
+        print(f"HTTP request error for SNP {rs_id}: {e}")
+        return {"error": f"Error connecting to NCBI database: {str(e)}"}
+    except ElementTree.ParseError as e:
+        print(f"XML parsing error for SNP {rs_id}: {e}")
+        return {"error": f"Error parsing SNP data: {str(e)}"}
+    except Exception as e:
+        print(f"Unexpected error retrieving SNP {rs_id}: {e}")
+        return {"error": f"Unexpected error: {str(e)}"}
+

@@ -3,8 +3,8 @@ import time
 import os
 from dotenv import load_dotenv
 
-from ncbi_utils import search_gene_papers, fetch_paper_details, get_gene_info
-from openai_utils import analyze_papers
+from ncbi_util import search_gene_papers, fetch_paper_details, get_gene_info
+from openai_util import analyze_papers
 
 load_dotenv()
 
