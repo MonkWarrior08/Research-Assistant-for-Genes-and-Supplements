@@ -6,9 +6,7 @@
 
 > **Unlock your genetic insights** - A powerful tool for analyzing scientific literature related to specific genes and SNPs to provide personalized health insights.
 
-<img width="1760" alt="Screenshot 2025-03-08 at 9 07 24 PM" src="https://github.com/user-attachments/assets/5a41d589-5c45-4a0a-bf9a-efc6116f9846" /><img width="1748" alt="Screenshot 2025-03-08 at 9 07 55 PM" src="https://github.com/user-attachments/assets/7391e5e2-56af-4877-8192-a417b668fd90" />
-
-
+https://github.com/user-attachments/assets/78e2c887-18f5-451c-9521-d3e0c7ff6a4a
 
 ## 📋 Overview
 
