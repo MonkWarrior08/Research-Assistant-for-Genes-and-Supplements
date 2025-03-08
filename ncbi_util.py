@@ -40,7 +40,7 @@ def parse_gene_input(gene_input: str) -> Dict[str, str]:
             result["genotype"] = parts[2]
     return result
 
-def search_gene_paper(gene_name: str, max_results: int=20) -> list[str]:
+def search_gene_paper(gene_name: str, max_results: int=20, custom_date_range: Optional[str]=None) -> list[str]:
     gene_data = parse_gene_input(gene_name)
     search_terms = []
 
@@ -54,13 +54,20 @@ def search_gene_paper(gene_name: str, max_results: int=20) -> list[str]:
     
     search_term = " AND ".join(search_terms)
 
+    # Add date range to search if provided
+    search_params = {
+        "db": "pubmed",
+        "term": search_term,
+        "retmax": max_results,
+        "sort": "relevance"
+    }
+
+    if custom_date_range:
+        search_params["datetype"] = "pdat"  # Publication date
+        search_params["mindate"], search_params["maxdate"] = custom_date_range.split(":")
+
     try:
-        search_handle = Entrez.esearch(
-            db="pubmed",
-            term=search_term,
-            retmax=max_results,
-            sort="relevance"
-        )
+        search_handle = Entrez.esearch(**search_params)
         search_results = Entrez.read(search_handle)
         search_handle.close()
 
@@ -178,7 +185,7 @@ def get_gene_info(gene_name: str) -> Dict[str, Any]:
                 results["gene_info"] = {"error": f"Gene {gene_symbol} not foud"}
 
     except Exception as e:
-        results["gene_info"] = {"error": f"Error retreiving gene info: {str(e)}"}
+        results["gene_info"] = {"error": f"Error retrieving gene info: {str(e)}"}
     
     if rs_id:
         results["snp_info"] = get_snp_info_direct(rs_id)
@@ -196,9 +203,9 @@ def get_snp_info_direct(rs_id: str) -> Dict[str, Any]:
     try:
         url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=snp&id={rs_number}"
         if ncbi_api_key:
-            url += f"&api_key={NCBI_API_KEY}"
+            url += f"&api_key={ncbi_api_key}"
         
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
 
         root = ElementTree.fromstring(response.content)
@@ -246,6 +253,12 @@ def get_snp_info_direct(rs_id: str) -> Dict[str, Any]:
             snp_info["gene_names"] = ["Not specified"]
         if not snp_info["variant_type"]:
             snp_info["variant_type"] = "unknown"
+        if not snp_info["clinical_significance"]:
+            snp_info["clinical_significance"] = "Not specified"
+        if not snp_info["chromosome"]:
+            snp_info["chromosome"] = "Not specified"
+        if not snp_info["position"]:
+            snp_info["position"] = "Not specified"
         
         return snp_info
     

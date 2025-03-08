@@ -3,7 +3,7 @@ import time
 import os
 from dotenv import load_dotenv
 
-from ncbi_util import search_gene_papers, fetch_paper_details, get_gene_info
+from ncbi_util import search_gene_paper, fetch_paper_details, get_gene_info
 from openai_util import analyze_papers
 
 load_dotenv()
@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""...""", unsafe_allow_html=True)
+
 
 st.title("Gene Research Assistant")
 
@@ -39,7 +39,7 @@ if search_btn:
             with tabs[0]:
                 st.header(f"Research paper for {gene_name}")
 
-                pmids = search_gene_papers(gene_name, max_results, custom_date_range)
+                pmids = search_gene_paper(gene_name, max_results, custom_date_range)
 
                 if not pmids:
                     st.warning(f"No paper found for {gene_name}. Try a different parameters")
@@ -51,7 +51,18 @@ if search_btn:
                     for i, paper in enumerate(papers):
                         with st.expander(f"{i+1}. {paper['title']}"):
                             st.markdown(f"**Authors:** {paper['author']}")
-                            st.markdown('...')
+                            st.markdown(f"**Journal:** {paper['journal']}")
+                            st.markdown(f"**Publication Date:** {paper['publication_date']}")
+                            if paper['doi']:
+                                st.markdown(f"**DOI:** {paper['doi']}")
+                            st.markdown(f"**PMID:** {paper['pmid']}")
+                            st.markdown(f"**URL:** [PubMed Link]({paper['url']})")
+                            
+                            st.markdown("### Abstract")
+                            if paper['abstract']:
+                                st.markdown(paper['abstract'])
+                            else:
+                                st.info("No abstract available for this paper.")
             
             with tabs[1]:
                 st.header(f"Analysis for {gene_name}")
