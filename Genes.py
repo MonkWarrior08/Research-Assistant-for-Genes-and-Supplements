@@ -9,21 +9,34 @@ from openai_util import analyze_papers
 load_dotenv()
 
 st.set_page_config(
-    page_title="Gene Research Assistant",
+    page_title="Research Assistant",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-
-
-st.title("Gene Research Assistant")
-
-with st.sidebar:
+# Add a sidebar menu for navigation (this is optional since Streamlit will automatically
+# add navigation for pages in the pages/ directory)
+with st.sidebar:    
     st.header("Search Parameters")
-
     gene_name = st.text_input("Gene & SNP Input", value="")
     search_btn = st.button("Analyze", type='primary')
+    
+    st.markdown("---")
+    st.header("About Gene Research")
+    st.markdown("""
+    This assistant uses:
+    - **NCBI/PubMed API** for scientific gene research and paper retrieval
+    - **OpenAI GPT-3.5 Turbo** for intelligent analysis of research findings
+    """)
+
+st.title("Gene Research Assistant")
+st.markdown("""
+This AI assistant searches the National Center for Biotechnology Information (NCBI) 
+for scientific research on genes and provides a detailed analysis.
+
+Enter a gene name or SNP identifier in the sidebar to begin.
+""")
 
 if search_btn:
     if not gene_name:

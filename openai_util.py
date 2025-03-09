@@ -1,18 +1,16 @@
 import os
 from typing import Dict, List, Any, Optional
 import openai
-from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Create a client instance explicitly instead of using global client
+# Set the API key for the openai package (v0.28.1)
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     print("openai api key is not set")
-
-# Use the OpenAI client properly
-client = OpenAI(api_key=api_key)
+else:
+    openai.api_key = api_key
 
 def analyze_papers(papers: List[Dict[str, Any]], gene_name: str, analysis_type: str = "comprehensive", snp_id: str = "", genotype: str = "") -> str:
     if not papers:
@@ -32,14 +30,14 @@ def analyze_papers(papers: List[Dict[str, Any]], gene_name: str, analysis_type: 
 
         prompt = create_comprehensive_prompt(gene_name, all_paper_text, snp_id, genotype)
 
-        # Use the client object instead of the global client
-        response = client.chat.completions.create(
-            model="chatgpt-4o-latest",
+        
+        response = openai.chat.completions.create(
+            model="gpt-4o",  
             messages=[
                 {"role": "system", "content": "You are a helpful scientific research assistant specializing in genetics and genomics with expertise in SNP analysis and genotype-phenotype associations."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.4
+            temperature=0.5
         )
 
         return response.choices[0].message.content
