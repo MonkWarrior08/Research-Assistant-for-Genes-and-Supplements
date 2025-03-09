@@ -271,8 +271,11 @@ def generate_analysis(abstracts, query, model="gpt4-o"):
         abstracts_text += f"    Journal: {abstract['journal']}\n"
         abstracts_text += f"    Abstract: {abstract['abstract']}\n\n"
     
-    system_prompt = """You are a scientific research assistant specializing in nutritional supplements and health science.
-    Analyze the provided research abstracts and create a detailed, well-structured report addressing:
+    system_prompt = "You are a scientific research assistant specializing in nutritional supplements and health science."
+    
+    user_prompt = f"""Based on the following research abstracts about supplements for '{query}', provide a detailed analysis.
+    
+    Your analysis should address:
     
     1. Overview of the supplements mentioned and their potential benefits for the specific health goal
     2. Quality and strength of evidence for each supplement (clinical trials, animal studies, in vitro, etc.)
@@ -282,9 +285,9 @@ def generate_analysis(abstracts, query, model="gpt4-o"):
     
     Your report should be factual, evidence-based, and avoid exaggerating benefits or downplaying risks.
     If the evidence is inconclusive or limited, clearly state this fact.
-    """
     
-    user_prompt = f"Based on the following research abstracts about supplements for '{query}', provide a detailed analysis:\n{abstracts_text}"
+    RESEARCH ABSTRACTS:
+    {abstracts_text}"""
     
     try:
         response = openai.chat.completions.create(
