@@ -35,7 +35,6 @@ The Research Assistant for Genes and Supplements is an AI-powered application th
 ### 🛠️ Technical Capabilities
 - **NCBI Integration**: Direct access to PubMed and other scientific databases
 - **Real-time analysis**: Generate insights on-demand from the latest research
-- **Smart caching system**: Improve performance by caching search results
 - **Multi-page interface**: Separate sections for gene and supplement research
 - **User-friendly interface**: Simple, intuitive design for both researchers and individuals
 
