@@ -6,7 +6,6 @@
 
 > **Unlock your health insights** - A powerful tool for analyzing scientific literature related to specific genes, SNPs, and supplements to provide personalized health recommendations.
 
-https://github.com/user-attachments/assets/78e2c887-18f5-451c-9521-d3e0c7ff6a4a
 
 ## 📋 Overview
 
