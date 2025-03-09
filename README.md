@@ -1,16 +1,16 @@
-# 🧬 Gene Research Assistant
+# 🧬 Research Assistant for Genes and Supplements
 
 ![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.8+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
-> **Unlock your genetic insights** - A powerful tool for analyzing scientific literature related to specific genes, SNPs, and supplements to provide personalized health insights.
+> **Unlock your health insights** - A powerful tool for analyzing scientific literature related to specific genes, SNPs, and supplements to provide personalized health recommendations.
 
 https://github.com/user-attachments/assets/78e2c887-18f5-451c-9521-d3e0c7ff6a4a
 
 ## 📋 Overview
 
-Gene Research Assistant is an AI-powered application that helps individuals understand scientific literature related to specific genes, genetic variants (SNPs), and nutritional supplements. The tool bridges the gap between complex scientific research and personal health insights by:
+The Research Assistant for Genes and Supplements is an AI-powered application that helps individuals understand scientific literature related to specific genes, genetic variants (SNPs), and nutritional supplements. The tool bridges the gap between complex scientific research and personal health insights by:
 
 - Retrieving relevant scientific papers from NCBI databases
 - Processing and analyzing paper content with AI
@@ -95,7 +95,7 @@ streamlit run Genes.py
 2. **Enter a supplement name** to search for scientific research
 3. **Review the analysis** of supplement effectiveness and relevant studies
 
-## 🧩 Project Structure
+## 💻 Project Structure
 
 - `Genes.py` - Main Streamlit application for gene research
 - `pages/supplements.py` - Supplement research functionality
@@ -128,4 +128,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-<p align="center">Made with ❤️ for genetic discovery and personal health insights</p> 
+<p align="center">Made with ❤️ for scientific discovery and personal health insights</p> 
