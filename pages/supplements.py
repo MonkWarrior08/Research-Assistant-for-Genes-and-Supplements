@@ -161,9 +161,9 @@ def generate_analysis(abstracts, query, model="gpt4-o"):
         abstracts_text += f"    Journal: {abstract['journal']}\n"
         abstracts_text += f"    Abstract: {abstract['abstract']}\n\n"
     
-    system_prompt = "You are a scientific research assistant specializing in nutritional supplements and health science. Your task is to analyze research data and provide detailed, evidence-based analysis for EACH individual supplement separately rather than just an overview. Structure your response with dedicated sections for each supplement mentioned in the research."
+    system_prompt = "You are a scientific research assistant specializing EXCLUSIVELY in nutritional supplements and their effects on health. Your task is to analyze research data and provide detailed, evidence-based analysis ONLY for supplements mentioned in the abstracts. NEVER suggest dietary changes, lifestyle modifications, or therapeutic interventions that are not supplements. Focus SOLELY on supplement-based interventions."
     
-    user_prompt = f"""Based on the following research abstracts about supplements for '{query}', provide a detailed analysis.
+    user_prompt = f"""Based on the following research abstracts about supplements for '{query}', provide a detailed analysis FOCUSING EXCLUSIVELY ON SUPPLEMENTS.
     
     Your analysis should:
     
@@ -175,7 +175,11 @@ def generate_analysis(abstracts, query, model="gpt4-o"):
        - Potential mechanisms of action explaining how the supplement works
     3. Note any conflicts between studies regarding effectiveness or recommended dosages
     
-    DO NOT write a conclusion or comparison section at the end. Focus only on individual supplement analyses.
+    IMPORTANT RESTRICTIONS:
+    - DO NOT include any dietary recommendations or food-based interventions unless they are packaged as supplements
+    - DO NOT suggest therapies, lifestyle changes, or non-supplement interventions
+    - DO NOT write a conclusion or comparison section at the end
+    - FOCUS ONLY on nutritional supplements, vitamins, minerals, herbs, and similar supplemental compounds
     
     Your report should be factual, evidence-based, and avoid exaggerating benefits or downplaying risks.
     If the evidence is inconclusive or limited for any supplement, clearly state this fact.
@@ -199,7 +203,7 @@ def generate_analysis(abstracts, query, model="gpt4-o"):
 # User input
 with st.sidebar:
     st.header("Search Parameters")
-    query = st.text_input("Health Goal", placeholder="e.g.'improve focus and mental clarity'")
+    query = st.text_input("Supplement Input", placeholder="e.g. improve focus and mental clarity")
     search_btn = st.button("Research Supplements", type="primary")
 
 if search_btn:

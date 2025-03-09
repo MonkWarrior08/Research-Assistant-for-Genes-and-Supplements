@@ -2,6 +2,7 @@ import streamlit as st
 import time
 import os
 from dotenv import load_dotenv
+import re
 
 from ncbi_util import search_gene_paper, fetch_paper_details, get_gene_info
 from openai_util import analyze_papers
@@ -19,7 +20,10 @@ st.set_page_config(
 # add navigation for pages in the pages/ directory)
 with st.sidebar:    
     st.header("Search Parameters")
-    gene_name = st.text_input("Gene & SNP Input", value="")
+    st.markdown("Enter gene information:")
+    gene_symbol = st.text_input("Gene Symbol", value="", placeholder="e.g. OPN4")
+    rs_id = st.text_input("SNP Identifier", value="", placeholder="e.g. rs1079610")
+    genotype = st.text_input("Genotype", value="", placeholder="e.g. TC")
     search_btn = st.button("Analyze", type='primary')
     
     st.markdown("---")
@@ -27,7 +31,7 @@ with st.sidebar:
     st.markdown("""
     This assistant uses:
     - **NCBI/PubMed API** for scientific gene research and paper retrieval
-    - **OpenAI GPT-3.5 Turbo** for intelligent analysis of research findings
+    - **OpenAI GPT-4o** for intelligent analysis of research findings
     """)
 
 st.title("Gene Research Assistant")
@@ -39,9 +43,18 @@ Enter a gene name or SNP identifier in the sidebar to begin.
 """)
 
 if search_btn:
-    if not gene_name:
-        st.error("Enter Gene")
+    if not gene_symbol or not rs_id or not genotype:
+        st.error("Please fill in all three fields: Gene Symbol, SNP Identifier, and Genotype")
+    elif not re.search(r'rs\d{3,}', rs_id.lower()):
+        st.error("SNP Identifier must be in the format 'rs' followed by at least 3 digits (e.g., rs1079610)")
+    elif not re.match(r'^[ACGTacgt]{2}$', genotype):
+        st.error("Genotype must be exactly two nucleotides (A, C, G, or T)")
     else:
+        # Convert inputs to consistent format (gene_symbol as is, rs_id lowercase, genotype uppercase)
+        rs_id = rs_id.lower()
+        genotype = genotype.upper()
+        # Combine inputs for processing
+        gene_name = f"{gene_symbol} {rs_id} {genotype}"
         tabs = st.tabs(["Research Papers", "Analysis"])
 
         with st.spinner(f"Researching for {gene_name}"):
