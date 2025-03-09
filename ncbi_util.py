@@ -271,4 +271,3 @@ def get_snp_info_direct(rs_id: str) -> Dict[str, Any]:
     except Exception as e:
         print(f"Unexpected error retrieving SNP {rs_id}: {e}")
         return {"error": f"Unexpected error: {str(e)}"}
-
