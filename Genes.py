@@ -105,6 +105,12 @@ if search_btn:
                     with st.spinner("Generating analysis..."):
                         analysis = analyze_papers(papers, gene_name, snp_id=snp_id, genotype=genotype)
                         st.markdown(analysis)
+                        st.download_button(
+                            label="Download analysis",
+                            data=analysis,
+                            file_name=f"{gene_symbol}_{gene_name}_{genotype}.txt",
+                            mime="text/plain"
+                        )
 
 st.markdown("---")
 

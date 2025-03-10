@@ -62,14 +62,14 @@ def create_comprehensive_prompt(gene_name: str, papers_text: str, snp_id: str = 
     
     return f"""
     Based on the following research papers about {query_description}, provide a comprehensive detailed scientific analysis 
-    focused on personal health implications and self-understanding. Do not include any title or conclusion sections.
+    focused on personal health implications and self-understanding. Do not include any title, summary or conclusion sections.
 
     SECTION 1: PERSONAL GENETIC INSIGHTS
     - What the {gene_name} gene does in your body and how it affects your everyday functioning{snp_context}
     - How your specific genetic variation{snp_context} might influence your health, personality traits, or physical characteristics
   
     SECTION 2: PRACTICAL APPLICATIONS & CONSIDERATIONS
-    - First highlight any practical applications or recommendations specifically mentioned in the research papers for your genotype{snp_context}
+    - First highlight any practical applications specifically mentioned in the research papers for your genotype{snp_context}
     - Focus on domain-specific factors directly related to the {gene_name} gene's function and your specific genetic variation(e.g., if it relates to social behavior, focus on social interactions) 
     
     Papers:
@@ -77,6 +77,7 @@ def create_comprehensive_prompt(gene_name: str, papers_text: str, snp_id: str = 
     
     Format your response with section headings, subheadings, and bullet points for readability.
     Use accessible and technical language wherever possible while maintaining accuracy.
-    Focus on practical, personalized insights with deep scientific analysis.
-    Do not include any introduction, title, or conclusion sections in your response.
+    Focus on practical, personalized insights with deep detailed scientific analysis.
+    Do not include any introduction, title, summary or conclusion sections in your response.
+    Do not include any form of summary, recap, overall or concluding remarks at the end.
     """

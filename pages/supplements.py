@@ -259,6 +259,12 @@ if search_btn:
                     with tabs[1]:
                         st.header(f"Analysis for '{query}'")
                         st.markdown(analysis)
+                        st.download_button(
+                            label="Download analysis",
+                            data=analysis,
+                            file_name=f"{query}.txt",
+                            mime="text/plain"
+                        )
 
 # Sidebar with information
 with st.sidebar:
