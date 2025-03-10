@@ -53,48 +53,30 @@ def create_comprehensive_prompt(gene_name: str, papers_text: str, snp_id: str = 
         if genotype:
             query_description += f" with genotype {genotype}"
     
+    # Create SNP-specific context if applicable
+    snp_context = ""
+    if snp_id and genotype:
+        snp_context = f" and your specific {snp_id} {genotype} genotype (both alleles)"
+    elif snp_id:
+        snp_context = f" and your SNP {snp_id}"
+    
     return f"""
-    Based on the following research papers about {query_description}, provide a comprehensive analysis 
+    Based on the following research papers about {query_description}, provide a comprehensive detailed scientific analysis 
     focused on personal health implications and self-understanding. Do not include any title or conclusion sections.
 
     SECTION 1: PERSONAL GENETIC INSIGHTS
-    - What the {gene_name} gene does in your body and how it affects your everyday functioning
-    - How variations in this gene might influence your health, personality traits, or physical characteristics
-    - Practical implications for your daily life, health management, and lifestyle choices
-    - Potential risks or protective factors associated with your genetic profile
-    - How environmental factors might interact with this gene to affect your wellbeing
-    - Personalized context for understanding your unique genetic makeup
-    
+    - What the {gene_name} gene does in your body and how it affects your everyday functioning{snp_context}
+    - How your specific genetic variation{snp_context} might influence your health, personality traits, or physical characteristics
+  
     SECTION 2: PRACTICAL APPLICATIONS & CONSIDERATIONS
-    - Actionable lifestyle modifications that might be beneficial based on this genetic information
-    - Nutrition, exercise, or environmental factors that may be particularly relevant
-    - Questions to discuss with healthcare providers about this genetic information
-    - Common misconceptions about this gene and how to properly interpret your genetic data
-    - How this information fits into the broader context of your overall health
-   
-    {create_snp_section(snp_id, genotype)}
+    - First highlight any practical applications or recommendations specifically mentioned in the research papers for your genotype{snp_context}
+    - Focus on domain-specific factors directly related to the {gene_name} gene's function and your specific genetic variation(e.g., if it relates to social behavior, focus on social interactions) 
     
     Papers:
     {papers_text}
     
     Format your response with section headings, subheadings, and bullet points for readability.
-    Use accessible, non-technical language wherever possible while maintaining accuracy.
-    Focus on practical, personalized insights rather than academic discussions.
+    Use accessible and technical language wherever possible while maintaining accuracy.
+    Focus on practical, personalized insights with deep scientific analysis.
     Do not include any introduction, title, or conclusion sections in your response.
-    """
-
-def create_snp_section(snp_id: str, genotype: str) -> str:
-    if not snp_id:
-        return ""
-    
-    genotype_text = f"with genotype {genotype}" if genotype else ""
-    
-    return f"""
-    SECTION 3: YOUR SNP PROFILE
-    - Personal implications of having SNP {snp_id} {genotype_text}:
-      - How this specific genetic variation might affect your body and health
-      - What your genotype potentially means for your personal traits or health risks
-      - How common this variation is among people with your ancestry or background
-      - Lifestyle factors that might be especially important with your genetic profile
-      - Practical ways to work with your genetic predispositions for optimal wellbeing
     """

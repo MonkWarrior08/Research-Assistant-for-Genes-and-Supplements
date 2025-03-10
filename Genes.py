@@ -43,18 +43,19 @@ Enter a gene name or SNP identifier in the sidebar to begin.
 """)
 
 if search_btn:
-    if not gene_symbol or not rs_id or not genotype:
-        st.error("Please fill in all three fields: Gene Symbol, SNP Identifier, and Genotype")
+    if not rs_id or not genotype:
+        st.error("Please fill at least SNP Identifier and Genotype")
     elif not re.search(r'rs\d{3,}', rs_id.lower()):
         st.error("SNP Identifier must be in the format 'rs' followed by at least 3 digits (e.g., rs1079610)")
     elif not re.match(r'^[ACGTacgt]{2}$', genotype):
         st.error("Genotype must be exactly two nucleotides (A, C, G, or T)")
     else:
         # Convert inputs to consistent format (gene_symbol as is, rs_id lowercase, genotype uppercase)
+        gene_symbol = gene_symbol.upper()
         rs_id = rs_id.lower()
         genotype = genotype.upper()
         # Combine inputs for processing
-        gene_name = f"{gene_symbol} {rs_id} {genotype}"
+        gene_name = f"{gene_symbol} {rs_id} {genotype}" if gene_symbol else f"{rs_id} {genotype}"
         tabs = st.tabs(["Research Papers", "Analysis"])
 
         with st.spinner(f"Researching for {gene_name}"):
