@@ -270,7 +270,7 @@ if search_btn:
 with st.sidebar:
     st.subheader("About Supplement Research")
     st.markdown("""
-    This assistant uses:
+    
     - NCBI/PubMed API for scientific research
     - OpenAI gpt4-o for analysis
     
