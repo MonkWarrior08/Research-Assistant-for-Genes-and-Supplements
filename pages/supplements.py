@@ -270,7 +270,11 @@ if search_btn:
 with st.sidebar:
     st.subheader("About Supplement Research")
     st.markdown("""
+<<<<<<< HEAD
     this is main
+=======
+    hello
+>>>>>>> d952159c68a4610f18404801bce2927c4cede363
     - NCBI/PubMed API for scientific research
     - OpenAI gpt4-o for analysis
     
