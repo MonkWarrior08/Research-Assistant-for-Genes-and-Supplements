@@ -64,15 +64,11 @@ def analyze_single_abstract(abstract: str, gene_name: str, snp_id: str = "", gen
         
         ### SNP {snp_id} Information:
         • [Key finding or information about the SNP from the abstract]
-          • [Explanation/clarification of what this means in simple terms]
         • [Another key finding about the SNP]
-          • [Explanation/clarification]
         
         ### Genotype {genotype} Information:
         • [Key finding or information about this specific genotype]
-          • [Explanation/clarification of what this means in simple terms]
         • [Another key finding about this genotype]
-          • [Explanation/clarification]
         
         Important guidelines:
         - If no information is found about the SNP, include only the gene information.
