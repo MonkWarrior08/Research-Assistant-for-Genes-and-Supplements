@@ -44,33 +44,24 @@ def search_gene_paper(gene_name: str, max_results: int=20, custom_date_range: Op
     gene_data = parse_gene_input(gene_name)
     search_terms = []
     
-    # Create a more inclusive search - instead of requiring all terms to match (AND),
-    # make the query more flexible
+    # Build search terms with a balanced approach - more focused than the previous version
+    # but still more inclusive than the original
     
-    # Gene search as a separate query
-    gene_query = ""
+    # Add gene search term with a broader field coverage
     if gene_data["gene"]:
-        gene_query = f"({gene_data['gene']}[Gene/Protein] OR {gene_data['gene']}[All Fields])"
+        search_terms.append(f"({gene_data['gene']}[Gene Symbol] OR {gene_data['gene']}[Title/Abstract])")
     
-    # SNP and genotype search as a separate query
-    other_terms = []
+    # Add SNP search term
     if gene_data["rs_id"]:
-        other_terms.append(f"{gene_data['rs_id']}[All Fields]")
+        search_terms.append(f"{gene_data['rs_id']}[All Fields]")
+    
+    # Add genotype search term
     if gene_data["genotype"]:
         allele_search = " OR ".join([f"{allele}[All Fields]" for allele in gene_data["genotype"]])
-        other_terms.append(f"({allele_search})")
+        search_terms.append(f"({allele_search})")
     
-    other_query = " AND ".join(other_terms) if other_terms else ""
-    
-    # Construct the final search term
-    if gene_query and other_query:
-        # More flexible search - matches papers that either mention both gene AND (SNP/genotype) 
-        # OR papers that strongly mention the gene in title/abstract
-        search_term = f"({gene_query} AND ({other_query})) OR ({gene_data['gene']}[Title/Abstract])"
-    elif gene_query:
-        search_term = gene_query
-    else:
-        search_term = other_query
+    # Combine all search terms with AND for more relevant results
+    search_term = " AND ".join(search_terms)
 
     # Add date range to search if provided
     search_params = {

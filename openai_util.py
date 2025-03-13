@@ -58,7 +58,6 @@ def analyze_single_abstract(abstract: str, gene_name: str, snp_id: str = "", gen
         
         For each section (SNP and genotype), provide:
         1. Main bullet points of all relevant information found in the abstract
-        2. For each main bullet point, add a sub-bullet point that explains its meaning and provides clarification
         
         Format your response as follows:
         
@@ -68,13 +67,14 @@ def analyze_single_abstract(abstract: str, gene_name: str, snp_id: str = "", gen
         
         ### Genotype {genotype} Information:
         • [Key finding or information about this specific genotype]
+         
         • [Another key finding about this genotype]
-        
+          
         Important guidelines:
         - If no information is found about the SNP, include only the gene information.
         - If no information is found about the genotype, omit that section entirely.
         - If neither SNP nor genotype information is found, respond with "No relevant information found."
-        - Use bullet points (•) for main points and sub-bullets for explanations.
+        - Use bullet points (•) for main points
         - Keep the language precise yet accessible.
         
         Abstract:
