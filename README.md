@@ -1,6 +1,6 @@
 # 🧬 Research Assistant for Genes and Supplements
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.8+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
@@ -20,23 +20,25 @@ The Research Assistant for Genes and Supplements is an AI-powered application th
 ## ✨ Features
 
 ### 🔍 Research Paper Analysis
-- **Gene-specific searches**: Find papers related to a particular gene or SNP
+- **Enhanced gene-specific searches**: Find papers related to particular genes, SNPs, or gene-SNP combinations
+- **Genotype analysis**: Understand implications of specific genotypes (e.g., "MTHFR C677T TT")
 - **Supplement research**: Analyze scientific literature on nutritional supplements
 - **Comprehensive paper details**: View titles, authors, journals, publication dates, and full abstracts
-- **Efficient filtering**: Organize research findings by relevance
+- **Efficient filtering**: Organize research findings by relevance and publication date
 
 ### 🧠 AI-Powered Insights
-- **Personal genetic insights**: Understand what your genes mean for your health and traits
+- **Personalized genetic insights**: Understand what your genes mean for your health and traits
+- **Risk assessment**: Learn about potential health conditions associated with specific genetic variants
+- **Gene-supplement interactions**: Discover how supplements may interact with your genetic profile
 - **Practical applications**: Get actionable lifestyle recommendations based on genetic information
-- **SNP profile analysis**: Learn specific implications of your genetic variants
-- **Supplement effectiveness**: Research evidence-based information on supplements
 - **Plain language explanations**: Complex scientific concepts explained in accessible terms
 
 ### 🛠️ Technical Capabilities
-- **NCBI Integration**: Direct access to PubMed and other scientific databases
+- **Advanced NCBI Integration**: Direct access to PubMed and other scientific databases
 - **Real-time analysis**: Generate insights on-demand from the latest research
 - **Multi-page interface**: Separate sections for gene and supplement research
 - **User-friendly interface**: Simple, intuitive design for both researchers and individuals
+- **Comprehensive SNP database**: Access information on thousands of clinically relevant SNPs
 
 ## 🚀 Getting Started
 
@@ -76,17 +78,27 @@ streamlit run Genes.py
 ## 📖 How to Use
 
 ### Gene Research
-1. **Enter a gene name or SNP ID**
-   - Example formats: "BRCA1", "rs429358", "APOE rs429358"
-   - You can also include genotype information: "APOE rs429358 TT" 
+1. **Enter a gene name, SNP ID, or combination**
+   - Simple gene search: "MTHFR", "APOE", "COMT"
+   - SNP search: "rs1801133", "rs429358"
+   - Gene-SNP combination: "MTHFR rs1801133", "APOE rs429358"
+   - With genotype: "MTHFR rs1801133 CT", "APOE rs429358 TT"
 
-2. **Review research papers**
+2. **Customize your search (optional)**
+   - Adjust the number of papers to retrieve
+   - Filter by publication date
+   - Include or exclude specific terms
+
+3. **Review research papers**
    - Expand paper entries to view detailed information
-   - Read abstracts to understand key findings
+   - Sort results by relevance or date
+   - Access direct links to original studies
 
-3. **Analyze genetic insights**
-   - View the AI-generated analysis for personalized information
-   - Learn about practical applications for your health
+4. **Analyze genetic insights**
+   - Review the AI-generated analysis of your genetic information
+   - Learn about potential health implications
+   - Discover lifestyle modifications relevant to your genetic profile
+   - Understand how your genotype compares to population averages
 
 ### Supplement Research
 1. **Navigate to the Supplements page** using the sidebar
@@ -115,6 +127,8 @@ streamlit run Genes.py
 ## 🔒 Privacy & Ethics
 
 This tool is designed for educational and informational purposes only. It should not be used to replace professional medical advice. Always consult with healthcare providers before making health decisions based on genetic information or supplement use.
+
+The application does not store your genetic information or search queries beyond your current session.
 
 ## 🤝 Contributing
 
