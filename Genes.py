@@ -3,9 +3,10 @@ import time
 import os
 from dotenv import load_dotenv
 import re
+import openai
 
 from ncbi_util import search_gene_paper, fetch_paper_details, get_gene_info
-from openai_util import analyze_papers
+from openai_util import analyze_papers, analyze_single_abstract
 
 load_dotenv()
 
@@ -56,20 +57,24 @@ if search_btn:
         genotype = genotype.upper()
         # Combine inputs for processing
         gene_name = f"{gene_symbol} {rs_id} {genotype}" if gene_symbol else f"{rs_id} {genotype}"
+        
         tabs = st.tabs(["Research Papers", "Analysis"])
-
+        
         with st.spinner(f"Researching for {gene_name}"):
             combined_info = get_gene_info(gene_name)
             max_results = 20
             custom_date_range = None
+            
+            # Create a list to collect all individual paper analyses
+            all_analyses = []
 
             with tabs[0]:
-                st.header(f"Research paper for {gene_name}")
+                st.header(f"Research papers for {gene_name}")
 
                 pmids = search_gene_paper(gene_name, max_results, custom_date_range)
 
                 if not pmids:
-                    st.warning(f"No paper found for {gene_name}. Try a different parameters")
+                    st.warning(f"No papers found for {gene_name}. Try different parameters")
                 else:
                     st.success(f"Found {len(pmids)} papers.")
                     
@@ -85,30 +90,87 @@ if search_btn:
                             st.markdown(f"**PMID:** {paper['pmid']}")
                             st.markdown(f"**URL:** [PubMed Link]({paper['url']})")
                             
-                            st.markdown("### Abstract")
                             if paper['abstract']:
+                                # Display full abstract first
+                                st.markdown("### Full Abstract")
                                 st.markdown(paper['abstract'])
+                                
+                                # Generate and display AI analysis for this specific abstract
+                                with st.spinner("Analyzing this paper..."):
+                                    analysis_result = analyze_single_abstract(paper['abstract'], gene_name, rs_id, genotype)
+                                    
+                                    # Store the analysis for the summary tab if it contains relevant information
+                                    if "No relevant information found" not in analysis_result:
+                                        paper_info = {
+                                            "title": paper['title'],
+                                            "author": paper['author'],
+                                            "journal": paper['journal'],
+                                            "publication_date": paper['publication_date'],
+                                            "analysis": analysis_result
+                                        }
+                                        all_analyses.append(paper_info)
+                                    
+                                    # Show AI analysis
+                                    st.markdown("### AI Analysis")
+                                    st.markdown("*The following analysis was automatically generated for this research paper:*")
+                                    
+                                    if "No relevant information found" in analysis_result:
+                                        st.info(analysis_result)
+                                    else:
+                                        st.success(analysis_result)
                             else:
                                 st.info("No abstract available for this paper.")
             
+            # Analysis tab - Summarize all individual analyses
             with tabs[1]:
-                st.header(f"Analysis for {gene_name}")
-
-                if not pmids:
-                    st.warning("No paper to analyze.")
+                st.header(f"Summary Analysis for {gene_name}")
+                
+                if not all_analyses:
+                    st.warning("No relevant information found in any of the papers to create a summary analysis.")
                 else:
-                    papers = fetch_paper_details(pmids)
-
-                    snp_id = combined_info.get("snp_info", {}).get("rs_id", "")
-                    genotype = combined_info.get("snp_info", {}).get("genotype", "")
-
-                    with st.spinner("Generating analysis..."):
-                        analysis = analyze_papers(papers, gene_name, snp_id=snp_id, genotype=genotype)
-                        st.markdown(analysis)
+                    with st.spinner("Generating comprehensive summary analysis..."):
+                        # Format the analyses for the summary
+                        analyses_text = ""
+                        for i, paper_info in enumerate(all_analyses):
+                            analyses_text += f"## PAPER {i+1}: {paper_info['title']}\n"
+                            analyses_text += f"*{paper_info['author']} - {paper_info['journal']} ({paper_info['publication_date']})*\n\n"
+                            analyses_text += f"{paper_info['analysis']}\n\n"
+                        
+                        # Generate a comprehensive summary of all analyses
+                        summary_prompt = f"""
+                        Based on the following individual paper analyses about {gene_name}, create a comprehensive summary.
+                        These are analyses of papers about the gene {gene_symbol.upper() if gene_symbol else ''}, 
+                        SNP {rs_id}, and genotype {genotype}.
+                        
+                        Focus on synthesizing the key findings and creating a cohesive summary that highlights:
+                        1. The most important findings about the SNP and genotype across all papers
+                        2. Any consensus or contradictions between the papers
+                        3. The most significant health implications and practical considerations
+                        
+                        Format your response with clear sections and bullet points for readability.
+                        
+                        INDIVIDUAL PAPER ANALYSES:
+                        {analyses_text}
+                        """
+                        
+                        response = openai.chat.completions.create(
+                            model="gpt-4o",
+                            messages=[
+                                {"role": "system", "content": "You are a scientific research assistant specializing in genetics. You synthesize multiple research findings into coherent summaries."},
+                                {"role": "user", "content": summary_prompt}
+                            ],
+                            temperature=0.3,
+                            max_tokens=2000
+                        )
+                        
+                        summary_analysis = response.choices[0].message.content.strip()
+                        st.markdown(summary_analysis)
+                        
+                        # Add download button for the summary analysis
                         st.download_button(
-                            label="Download analysis",
-                            data=analysis,
-                            file_name=f"{gene_symbol}_{gene_name}_{genotype}.txt",
+                            label="Download summary analysis",
+                            data=summary_analysis,
+                            file_name=f"{gene_symbol or rs_id}_{genotype}_summary_analysis.txt",
                             mime="text/plain"
                         )
 

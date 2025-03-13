@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set the API key for the openai package (v0.28.1)
+# Set the API key for the openai package (v0.28.1)cs
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     print("openai api key is not set")
@@ -17,67 +17,86 @@ def analyze_papers(papers: List[Dict[str, Any]], gene_name: str, analysis_type: 
         return "No paper to analyze."
     
     try:
-        paper_texts = []
+        # Process each abstract individually
+        results = []
         for i, paper in enumerate(papers[:20]):
-            paper_text = f"PAPER {i+1}:\n"
-            paper_text += f"TITLE: {paper['title']}\n"
-            paper_text += f"AUTHORS: {paper['author']}\n"
-            paper_text += f"JOURNAL: {paper['journal']} ({paper['publication_date']})\n"
-            paper_text += f"ABSTRACT: {paper['abstract']}\n\n"
-            paper_texts.append(paper_text)
+            if paper['abstract']:
+                # Analyze each abstract with detailed bullet points
+                abstract_analysis = analyze_single_abstract(
+                    paper['abstract'], 
+                    gene_name, 
+                    snp_id, 
+                    genotype
+                )
+                
+                if abstract_analysis and abstract_analysis != "No relevant information found.":
+                    paper_result = f"## PAPER {i+1}:\n"
+                    paper_result += f"**TITLE**: {paper['title']}\n"
+                    paper_result += f"**AUTHORS**: {paper['author']}\n"
+                    paper_result += f"**JOURNAL**: {paper['journal']} ({paper['publication_date']})\n"
+                    paper_result += f"**URL**: {paper.get('url', '')}\n\n"
+                    paper_result += f"{abstract_analysis}\n\n"
+                    
+                    results.append(paper_result)
         
-        all_paper_text = "\n".join(paper_texts)
-
-        prompt = create_comprehensive_prompt(gene_name, all_paper_text, snp_id, genotype)
-
+        if not results:
+            return f"No relevant information about {gene_name} gene, SNP {snp_id}, or genotype {genotype} found in any of the papers."
         
-        response = openai.chat.completions.create(
-            model="gpt-4o",  
-            messages=[
-                {"role": "system", "content": "You are a helpful scientific research assistant specializing in genetics and genomics with expertise in SNP analysis and genotype-phenotype associations."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5
-        )
-
-        return response.choices[0].message.content
+        return "\n".join(results)
     
     except Exception as e:
-        print(f"Error during openai analysis: {e}")
-        return f"Error performing analysis: {str(e)}"
-    
-def create_comprehensive_prompt(gene_name: str, papers_text: str, snp_id: str = "", genotype: str = "") -> str:
-    query_description = f"gene {gene_name}"
-    if snp_id:
-        query_description = f"gene {gene_name} and SNP {snp_id}"
-        if genotype:
-            query_description += f" with genotype {genotype}"
-    
-    # Create SNP-specific context if applicable
-    snp_context = ""
-    if snp_id and genotype:
-        snp_context = f" and your specific {snp_id} {genotype} genotype (both alleles)"
-    elif snp_id:
-        snp_context = f" and your SNP {snp_id}"
-    
-    return f"""
-    Based on the following research papers about {query_description}, provide a comprehensive detailed scientific analysis 
-    focused on personal health implications and self-understanding. Do not include any title, summary or conclusion sections.
+        print(f"Error during abstract analysis: {e}")
+        return f"Error analyzing abstracts: {str(e)}"
 
-    SECTION 1: PERSONAL GENETIC INSIGHTS
-    - What the {gene_name} gene does in your body and how it affects your everyday functioning{snp_context}
-    - How your specific genetic variation{snp_context} might influence your health, personality traits, or physical characteristics
-  
-    SECTION 2: PRACTICAL APPLICATIONS & CONSIDERATIONS
-    - First highlight any practical applications specifically mentioned in the research papers for your genotype{snp_context}
-    - Focus on domain-specific factors directly related to the {gene_name} gene's function and your specific genetic variation(e.g., if it relates to social behavior, focus on social interactions) 
+def analyze_single_abstract(abstract: str, gene_name: str, snp_id: str = "", genotype: str = "") -> str:
+    """Analyze a single abstract with detailed bullet points for SNP ID and genotype information."""
+    try:
+        # Create a focused prompt for analyzing the abstract with bullet points
+        analysis_prompt = f"""
+        Analyze this scientific abstract to extract detailed information about the gene {gene_name.upper()},
+        focusing specifically on the SNP {snp_id} and genotype {genotype} if mentioned.
+        
+        For each section (SNP and genotype), provide:
+        1. Main bullet points of all relevant information found in the abstract
+        2. For each main bullet point, add a sub-bullet point that explains its meaning and provides clarification
+        
+        Format your response as follows:
+        
+        ### SNP {snp_id} Information:
+        • [Key finding or information about the SNP from the abstract]
+          • [Explanation/clarification of what this means in simple terms]
+        • [Another key finding about the SNP]
+          • [Explanation/clarification]
+        
+        ### Genotype {genotype} Information:
+        • [Key finding or information about this specific genotype]
+          • [Explanation/clarification of what this means in simple terms]
+        • [Another key finding about this genotype]
+          • [Explanation/clarification]
+        
+        Important guidelines:
+        - If no information is found about the SNP, include only the gene information.
+        - If no information is found about the genotype, omit that section entirely.
+        - If neither SNP nor genotype information is found, respond with "No relevant information found."
+        - Use bullet points (•) for main points and sub-bullets for explanations.
+        - Keep the language precise yet accessible.
+        
+        Abstract:
+        {abstract}
+        """
+        
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a scientific research assistant specializing in genetics. You extract and explain genetic information from research papers in a clear, organized way using bullet points."},
+                {"role": "user", "content": analysis_prompt}
+            ],
+            temperature=0.1,
+            max_tokens=1000
+        )
+        
+        return response.choices[0].message.content.strip()
     
-    Papers:
-    {papers_text}
-    
-    Format your response with section headings, subheadings, and bullet points for readability.
-    Use accessible and technical language wherever possible while maintaining accuracy.
-    Focus on practical, personalized insights with deep detailed scientific analysis.
-    Do not include any introduction, title, summary or conclusion sections in your response.
-    Do not include any form of summary, recap, overall or concluding remarks at the end.
-    """
+    except Exception as e:
+        print(f"Error during abstract analysis: {e}")
+        return f"Error analyzing abstract: {str(e)}"
