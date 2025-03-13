@@ -43,16 +43,34 @@ def parse_gene_input(gene_input: str) -> Dict[str, str]:
 def search_gene_paper(gene_name: str, max_results: int=20, custom_date_range: Optional[str]=None) -> list[str]:
     gene_data = parse_gene_input(gene_name)
     search_terms = []
-
+    
+    # Create a more inclusive search - instead of requiring all terms to match (AND),
+    # make the query more flexible
+    
+    # Gene search as a separate query
+    gene_query = ""
     if gene_data["gene"]:
-        search_terms.append(f"{gene_data['gene']}[Gene/Protein]")
+        gene_query = f"({gene_data['gene']}[Gene/Protein] OR {gene_data['gene']}[All Fields])"
+    
+    # SNP and genotype search as a separate query
+    other_terms = []
     if gene_data["rs_id"]:
-        search_terms.append(f"{gene_data['rs_id']}[All Fileds]")
+        other_terms.append(f"{gene_data['rs_id']}[All Fields]")
     if gene_data["genotype"]:
         allele_search = " OR ".join([f"{allele}[All Fields]" for allele in gene_data["genotype"]])
-        search_terms.append(f"({allele_search})")
+        other_terms.append(f"({allele_search})")
     
-    search_term = " AND ".join(search_terms)
+    other_query = " AND ".join(other_terms) if other_terms else ""
+    
+    # Construct the final search term
+    if gene_query and other_query:
+        # More flexible search - matches papers that either mention both gene AND (SNP/genotype) 
+        # OR papers that strongly mention the gene in title/abstract
+        search_term = f"({gene_query} AND ({other_query})) OR ({gene_data['gene']}[Title/Abstract])"
+    elif gene_query:
+        search_term = gene_query
+    else:
+        search_term = other_query
 
     # Add date range to search if provided
     search_params = {
